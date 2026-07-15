@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import re
 import shutil
 import sys
 from pathlib import Path
@@ -14,6 +15,17 @@ REPOSITORY_ROOT = Path(__file__).resolve().parent.parent
 SKILLS_DIRECTORY = REPOSITORY_ROOT / "skills"
 TOOLS = ("codex", "claude-code", "antigravity")
 SCOPES = ("user", "project")
+SKILL_NAME_PATTERN = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+
+
+def skill_source(skill_name: str) -> Path:
+    """Return a package path only for a bare, portable skill name."""
+    if not SKILL_NAME_PATTERN.fullmatch(skill_name):
+        raise ValueError("Skill name must be a lowercase kebab-case directory name")
+    source = SKILLS_DIRECTORY / skill_name
+    if not source.joinpath("SKILL.md").is_file() or source.resolve().parent != SKILLS_DIRECTORY.resolve():
+        raise ValueError(f"Skill package is not a direct repository child: {skill_name}")
+    return source
 
 
 def destination_root(
@@ -66,8 +78,8 @@ def main() -> int:
     parser.add_argument("--dry-run", action="store_true", help="print the target without writing files")
     args = parser.parse_args()
 
-    source = SKILLS_DIRECTORY / args.skill
     try:
+        source = skill_source(args.skill)
         destination = destination_root(args.tool, args.scope) / args.skill
         if args.dry_run:
             print(f"Would {args.mode} {source} to {destination}")
@@ -82,4 +94,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

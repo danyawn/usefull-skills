@@ -1,6 +1,6 @@
 # Install a skill
 
-All packages in this repository use a portable `SKILL.md` format. The core instructions are identical across supported tools; optional `agents/openai.yaml` metadata is read by Codex and safely ignored by other tools.
+All packages in this repository use a portable `SKILL.md` format. The core instructions are identical across supported tools; `agents/openai.yaml` is optional Codex-specific UI metadata.
 
 Run the installer from this repository's root:
 
@@ -25,4 +25,3 @@ The installer copies by default. Use `--mode symlink` to point the target at thi
 - Google Antigravity project: `.agents/skills/<skill-name>`
 
 Copy or symlink the complete package directory, not just `SKILL.md`, so optional metadata and future supporting resources remain available.
-
