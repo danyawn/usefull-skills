@@ -1,16 +1,16 @@
 # Useful Skills
 
-A curated, installable collection of Codex skills. Each skill is a self-contained folder whose `SKILL.md` provides the instructions Codex loads when the skill applies.
+A curated collection of portable Agent Skills for Codex, Claude Code, and Google Antigravity. Each package uses the open `SKILL.md` format: YAML frontmatter for discovery and Markdown instructions for execution.
 
 ## Install a skill
 
-Copy one skill directory into your Codex skills directory, preserving its name:
+Install one skill with the portable installer:
 
 ```sh
-cp -R skills/dashboard-ux "${CODEX_HOME:-$HOME/.codex}/skills/dashboard-ux"
+python3 scripts/install_skill.py dashboard-ux --tool claude-code --scope user
 ```
 
-Restart or refresh Codex after installing it. The skill can then be invoked as `$dashboard-ux`.
+Use `--tool codex`, `--tool claude-code`, or `--tool antigravity`; add `--scope project` where the tool supports project-local skills. The default copies the package; add `--mode symlink` to develop it from this checkout. See [installation instructions](docs/INSTALL.md) for every target path and manual setup.
 
 ## Repository layout
 
@@ -19,6 +19,7 @@ skills/<skill-name>/SKILL.md       # required skill instructions
 skills/<skill-name>/agents/        # optional Codex UI metadata
 catalog.yaml                       # category and lifecycle registry
 scripts/catalog.py                 # validation and README catalogue generator
+scripts/install_skill.py           # portable installer for supported coding tools
 ```
 
 ## Skills
@@ -41,4 +42,3 @@ python3 scripts/catalog.py --check
 Run `python3 scripts/catalog.py --write` after adding or reclassifying a skill to regenerate the marked catalogue section above.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the contribution flow.
-
