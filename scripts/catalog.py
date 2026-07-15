@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import re
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -19,6 +20,7 @@ README_PATH = ROOT / "README.md"
 START_MARKER = "<!-- skills-catalog:start -->"
 END_MARKER = "<!-- skills-catalog:end -->"
 VALID_STATUSES = {"experimental", "stable", "deprecated"}
+SKILL_NAME_PATTERN = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 
 
 class ValidationError(Exception):
@@ -104,11 +106,15 @@ def load_skills() -> tuple[list[Skill], list[dict[str, str]]]:
 
     registry_by_name: dict[str, dict[str, str]] = {}
     for entry in entries:
-        if not isinstance(entry, dict) or set(entry) != {"name", "category", "status"}:
-            raise ValidationError("catalog.yaml: each skill requires only name, category, and status")
-        name, category, status = entry["name"], entry["category"], entry["status"]
-        if not all(isinstance(value, str) and value for value in (name, category, status)):
+        if not isinstance(entry, dict) or set(entry) != {"name", "path", "category", "status"}:
+            raise ValidationError("catalog.yaml: each skill requires only name, path, category, and status")
+        name, path, category, status = entry["name"], entry["path"], entry["category"], entry["status"]
+        if not all(isinstance(value, str) and value for value in (name, path, category, status)):
             raise ValidationError("catalog.yaml: skill fields must be non-empty strings")
+        if not SKILL_NAME_PATTERN.fullmatch(name):
+            raise ValidationError(f"catalog.yaml: skill name must be kebab-case: {name}")
+        if path != f"skills/{name}":
+            raise ValidationError(f"catalog.yaml: path must be skills/{name} for {name}")
         if name in registry_by_name:
             raise ValidationError(f"catalog.yaml: duplicate skill name {name}")
         if category not in category_titles:
@@ -125,6 +131,8 @@ def load_skills() -> tuple[list[Skill], list[dict[str, str]]]:
     for path in skill_paths:
         metadata = load_frontmatter(path)
         name = metadata["name"]
+        if not SKILL_NAME_PATTERN.fullmatch(name):
+            raise ValidationError(f"{path.relative_to(ROOT)}: skill name must be kebab-case")
         if path.parent.name != name:
             raise ValidationError(f"{path.relative_to(ROOT)}: folder name must match skill name {name}")
         if name in discovered_names:
@@ -133,6 +141,8 @@ def load_skills() -> tuple[list[Skill], list[dict[str, str]]]:
             raise ValidationError(f"{path.relative_to(ROOT)}: skill is missing from catalog.yaml")
         discovered_names.add(name)
         entry = registry_by_name[name]
+        if entry["path"] != path.parent.relative_to(ROOT).as_posix():
+            raise ValidationError(f"catalog.yaml: path does not match package location for {name}")
         skill = Skill(name, metadata["description"], path.parent, entry["category"], entry["status"])
         validate_agent_metadata(skill)
         skills.append(skill)

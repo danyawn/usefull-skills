@@ -4,6 +4,6 @@ categories:
 
 skills:
   - name: dashboard-ux
+    path: skills/dashboard-ux
     category: design-ux
     status: stable
-

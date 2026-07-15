@@ -46,7 +46,7 @@ class CatalogValidationTests(unittest.TestCase):
             encoding="utf-8",
         )
         skills = (
-            f"skills:\n  - name: {skill_name}\n    category: test\n    status: stable\n"
+            f"skills:\n  - name: {skill_name}\n    path: skills/{skill_name}\n    category: test\n    status: stable\n"
             if registered
             else "skills: []\n"
         )
@@ -81,6 +81,15 @@ class CatalogValidationTests(unittest.TestCase):
             encoding="utf-8",
         )
         with self.assertRaisesRegex(catalog.ValidationError, "folder name must match"):
+            catalog.load_skills()
+
+    def test_rejects_a_registry_path_that_differs_from_package_location(self) -> None:
+        catalog.REGISTRY_PATH.write_text(
+            "categories:\n  - id: test\n    title: Test\n\n"
+            "skills:\n  - name: sample-skill\n    path: skills/elsewhere\n    category: test\n    status: stable\n",
+            encoding="utf-8",
+        )
+        with self.assertRaisesRegex(catalog.ValidationError, "path must be skills/sample-skill"):
             catalog.load_skills()
 
 
