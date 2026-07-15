@@ -1,0 +1,4 @@
+interface:
+  display_name: "Dashboard UX"
+  short_description: "Build concise, self-explanatory operational dashboards"
+  default_prompt: "Use $dashboard-ux to build or refine this operational dashboard so the interface explains itself while preserving established product terminology."
